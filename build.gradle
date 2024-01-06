@@ -1,0 +1,75 @@
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//    dependencies {
+//        classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.5.0'
+//        classpath 'io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE' // Spring Cloud版本管理器插件
+//    }
+//}
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'org.springframework.boot' version '2.5.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE' // Spring Cloud版本管理器插件
+}
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    maven { url 'https://repo.spring.io/milestone' } // 添加 Spring 仓库
+    maven { url 'https://repo.spring.io/'}
+}
+group = 'cn.piao888'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.1.0-RC1"
+        mavenBom "com.alibaba.cloud:spring-cloud-alibaba-dependencies:2.2.7.RELEASE"
+    }
+}
+ext {
+    dubboVersion = '2.7.8'
+    seataVersion = '1.4.2'
+    nacosClientVerison = '2.0.3'
+    druidVersion = '1.2.6'
+    springbootVerison = '2.3.12.RELEASE'
+    lombokVersion = '1.18.22'
+    slf4jVersion = '1.7.22'
+    logbackVersion = '1.1.10'
+}
+dependencies {
+//    implementation 'cn.piao888:common:0.0.1-SNAPSHOT'
+//    implementation project(":common")
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.4'
+    implementation 'mysql:mysql-connector-java:8.0.26'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+//    implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
+    implementation 'org.springframework.security:spring-security-cas'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+    implementation "io.seata:seata-spring-boot-starter:${seataVersion}"
+    implementation("org.apache.dubbo:dubbo:${dubboVersion}") {
+        exclude group: 'org.springframework', module: 'spring'
+    }
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+    implementation "org.apache.dubbo:dubbo-spring-boot-starter:${dubboVersion}"
+    implementation "org.apache.dubbo:dubbo-config-spring:${dubboVersion}"
+    implementation "org.apache.dubbo:dubbo-registry-nacos:${dubboVersion}"
+    implementation 'io.netty:netty-all:4.1.42.Final'
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "ch.qos.logback:logback-core:${logbackVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+}
+
+test {
+    useJUnitPlatform()
+}
