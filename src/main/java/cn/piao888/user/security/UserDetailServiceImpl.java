@@ -30,11 +30,16 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (userDO == null) {
             return null;
         }
-        UserInfo userDetails = new UserInfo();
-        userDetails.setUserName(userDO.getUsername());
-        userDetails.setNickName(userDO.getNickname());
-        userDetails.setId(userDO.getId());
-        userDetails.setPassword(userDO.getPassword());
+//        UserInfo userDetails = new UserInfo();
+//        userDetails.setUserName(userDO.getUsername());
+//        userDetails.setNickName(userDO.getNickname());
+//        userDetails.setId(userDO.getId());
+//        userDetails.setPassword(userDO.getPassword());
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(userDO.getUsername())
+                .password(userDO.getPassword())
+                .roles("admin", "normal")
+                .authorities("app", "web")
+                .build();
         return userDetails;
     }
 }

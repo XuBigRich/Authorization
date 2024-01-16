@@ -1,71 +1,44 @@
 package cn.piao888.user.controller;
 
-import cn.piao888.user.security.UserInfo;
-import cn.piao888.user.security.service.TokenService;
-import cn.piao888.user.utils.JwtUtil;
-import cn.piao888.user.vo.req.LoginBody;
-import cn.piao888.user.vo.response.ObjectResponse;
-import io.jsonwebtoken.Jwts;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
-import org.springframework.security.web.FilterChainProxy;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.IOException;
 import java.security.Principal;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 认证服务器相关自定接口
- * ·
  *
  * @author vains
  */
+@Controller
 @RequiredArgsConstructor
-@RestController
 public class AuthorizationController {
+
     private final RegisteredClientRepository registeredClientRepository;
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private TokenService tokenService;
 
-    @PostMapping("/login")
-    public ObjectResponse<String> login(@RequestBody LoginBody loginRequest) {
-        Authentication authenticationRequest =
-                UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUsername(), loginRequest.getPassword());
-        Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
-        UserInfo loginUser = (UserInfo) authenticationResponse.getPrincipal();
-        // 生成token
-        // 设置令牌过期时间，例如设置为一小时
-        final String token = tokenService.createToken(loginUser);
-        return ObjectResponse.success(token);
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
-
-    @GetMapping("/authorize1")
-    public void authorize(HttpServletResponse response, @RequestParam("redirect_uri") String returnUrl) throws IOException {
-        response.sendRedirect(returnUrl);
-    }
-
 
     @GetMapping(value = "/oauth2/consent")
     public String consent(Principal principal, Model model,
@@ -73,6 +46,7 @@ public class AuthorizationController {
                           @RequestParam(OAuth2ParameterNames.SCOPE) String scope,
                           @RequestParam(OAuth2ParameterNames.STATE) String state,
                           @RequestParam(name = OAuth2ParameterNames.USER_CODE, required = false) String userCode) {
+
         // Remove scopes that were already approved
         Set<String> scopesToApprove = new HashSet<>();
         Set<String> previouslyApprovedScopes = new HashSet<>();
