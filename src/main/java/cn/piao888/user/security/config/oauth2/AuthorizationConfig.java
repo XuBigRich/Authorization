@@ -1,10 +1,13 @@
 package cn.piao888.user.security.config.oauth2;
 
+import cn.piao888.user.security.config.device.DeviceClientAuthenticationConverter;
+import cn.piao888.user.security.config.device.DeviceClientAuthenticationProvider;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -62,6 +65,9 @@ import java.util.UUID;
 public class AuthorizationConfig {
 
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
+    // 新建设备码converter和provider
+
+
 
     /**
      * 配置端点的过滤器链
@@ -71,14 +77,31 @@ public class AuthorizationConfig {
      * @throws Exception 抛出
      */
     @Bean
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository registeredClientRepository,
+                                                                      AuthorizationServerSettings authorizationServerSettings) throws Exception {
+        DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
+                new DeviceClientAuthenticationConverter(
+                        authorizationServerSettings.getDeviceAuthorizationEndpoint());
+        DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
+                new DeviceClientAuthenticationProvider(registeredClientRepository);
         // 配置默认的设置，忽略认证端点的csrf校验
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 // 开启OpenID Connect 1.0协议相关端点
                 .oidc(Customizer.withDefaults())
                 // 设置自定义用户确认授权页
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
+                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint -> deviceAuthorizationEndpoint.verificationUri("/activate"))
+                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                )
+                .clientAuthentication(clientAuthentication ->
+                        // 客户端认证添加设备码的converter和provider
+                        clientAuthentication
+                                .authenticationConverter(deviceClientAuthenticationConverter)
+                                .authenticationProvider(deviceClientAuthenticationProvider)
+                );
+
         http
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) -> exceptions
@@ -132,6 +155,7 @@ public class AuthorizationConfig {
     public static void main(String[] args) {
         System.out.println(new BCryptPasswordEncoder().encode("rr998xhz1997"));
     }
+
     /**
      * 配置客户端Repository
      *
