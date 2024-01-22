@@ -2,6 +2,7 @@ package cn.piao888.user.security.config.oauth2;
 
 import cn.piao888.user.security.config.device.DeviceClientAuthenticationConverter;
 import cn.piao888.user.security.config.device.DeviceClientAuthenticationProvider;
+import cn.piao888.user.security.config.utils.SecurityUtils;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -68,7 +69,6 @@ public class AuthorizationConfig {
     // 新建设备码converter和provider
 
 
-
     /**
      * 配置端点的过滤器链
      *
@@ -77,42 +77,31 @@ public class AuthorizationConfig {
      * @throws Exception 抛出
      */
     @Bean
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository registeredClientRepository,
-                                                                      AuthorizationServerSettings authorizationServerSettings) throws Exception {
-        DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
-                new DeviceClientAuthenticationConverter(
-                        authorizationServerSettings.getDeviceAuthorizationEndpoint());
-        DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
-                new DeviceClientAuthenticationProvider(registeredClientRepository);
-        // 配置默认的设置，忽略认证端点的csrf校验
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository registeredClientRepository, AuthorizationServerSettings authorizationServerSettings) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+        // 新建设备码converter和provider
+        DeviceClientAuthenticationConverter deviceClientAuthenticationConverter = new DeviceClientAuthenticationConverter(authorizationServerSettings.getDeviceAuthorizationEndpoint());
+        DeviceClientAuthenticationProvider deviceClientAuthenticationProvider = new DeviceClientAuthenticationProvider(registeredClientRepository);
+        // 配置默认的设置，忽略认证端点的csrf校验
+
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 // 开启OpenID Connect 1.0协议相关端点
                 .oidc(Customizer.withDefaults())
                 // 设置自定义用户确认授权页
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
-                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint -> deviceAuthorizationEndpoint.verificationUri("/activate"))
-                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
-                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
-                )
-                .clientAuthentication(clientAuthentication ->
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)).deviceAuthorizationEndpoint(deviceAuthorizationEndpoint -> deviceAuthorizationEndpoint.verificationUri("/activate")).deviceVerificationEndpoint(deviceVerificationEndpoint -> deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)).clientAuthentication(clientAuthentication ->
                         // 客户端认证添加设备码的converter和provider
-                        clientAuthentication
-                                .authenticationConverter(deviceClientAuthenticationConverter)
-                                .authenticationProvider(deviceClientAuthenticationProvider)
-                );
+                        clientAuthentication.authenticationConverter(deviceClientAuthenticationConverter).authenticationProvider(deviceClientAuthenticationProvider));
 
         http
                 // 当未登录时访问认证端点时重定向至login页面
-                .exceptionHandling((exceptions) -> exceptions
-                        .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
-                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                        )
-                )
+                .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
                 // 处理使用access token访问用户信息端点和客户端注册端点
                 .oauth2ResourceServer((resourceServer) -> resourceServer
-                        .jwt(Customizer.withDefaults()));
+                        .jwt(Customizer.withDefaults())
+                        .accessDeniedHandler(SecurityUtils::exceptionHandler)
+                        .authenticationEntryPoint(SecurityUtils::exceptionHandler)
+                );
 
         return http.build();
     }
@@ -128,16 +117,11 @@ public class AuthorizationConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll().anyRequest().authenticated())
                 // 指定登录页面
-                .formLogin(formLogin ->
-                        formLogin.loginPage("/login")
-                );
+                .formLogin(formLogin -> formLogin.loginPage("/login"));
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
-        http.oauth2ResourceServer((resourceServer) -> resourceServer
-                .jwt(Customizer.withDefaults()));
+        http.oauth2ResourceServer((resourceServer) -> resourceServer.jwt(Customizer.withDefaults()));
 
         return http.build();
     }
@@ -173,21 +157,15 @@ public class AuthorizationConfig {
                 // 客户端认证方式，基于请求头的认证
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 // 配置资源服务器使用该客户端获取授权时支持的方式
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE).authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN).authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
-                .redirectUri("http://127.0.0.1:8882/login/oauth2/code/messaging-client-oidc")
-                .redirectUri("https://www.baidu.com")
+                .redirectUri("http://127.0.0.1:8882/login/oauth2/code/messaging-client-oidc").redirectUri("https://www.baidu.com")
                 // 该客户端的授权范围，OPENID与PROFILE是IdToken的scope，获取授权时请求OPENID的scope时认证服务会返回IdToken
-                .scope(OidcScopes.OPENID)
-                .scope(OidcScopes.PROFILE)
+                .scope(OidcScopes.OPENID).scope(OidcScopes.PROFILE)
                 // 自定scope
-                .scope("message.read")
-                .scope("message.write")
+                .scope("message.read").scope("message.write")
                 // 客户端设置，设置用户需要确认授权
-                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-                .build();
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build()).build();
 
         // 基于db存储客户端，还有一个基于内存的实现 InMemoryRegisteredClientRepository
         JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
@@ -198,17 +176,13 @@ public class AuthorizationConfig {
             registeredClientRepository.save(registeredClient);
         }
         // 设备码授权客户端
-        RegisteredClient deviceClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("device-message-client")
+        RegisteredClient deviceClient = RegisteredClient.withId(UUID.randomUUID().toString()).clientId("device-message-client")
                 // 公共客户端
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 // 设备码授权
-                .authorizationGrantType(AuthorizationGrantType.DEVICE_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.DEVICE_CODE).authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 // 自定scope
-                .scope("message.read")
-                .scope("message.write")
-                .build();
+                .scope("message.read").scope("message.write").build();
         RegisteredClient byClientId = registeredClientRepository.findByClientId(deviceClient.getClientId());
         if (byClientId == null) {
             registeredClientRepository.save(deviceClient);
@@ -252,10 +226,7 @@ public class AuthorizationConfig {
         KeyPair keyPair = generateRsaKey();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
         RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
+        RSAKey rsaKey = new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
     }
