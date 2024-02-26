@@ -38,7 +38,6 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -92,7 +91,10 @@ public class AuthorizationConfig {
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)).deviceAuthorizationEndpoint(deviceAuthorizationEndpoint -> deviceAuthorizationEndpoint.verificationUri("/activate")).deviceVerificationEndpoint(deviceVerificationEndpoint -> deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)).clientAuthentication(clientAuthentication ->
                         // 客户端认证添加设备码的converter和provider
                         clientAuthentication.authenticationConverter(deviceClientAuthenticationConverter).authenticationProvider(deviceClientAuthenticationProvider));
-
+        return http.build();
+    }
+    @Bean
+    public SecurityFilterChain resourcesServerSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
@@ -260,7 +262,7 @@ public class AuthorizationConfig {
     }
 
     /**
-     * 添加认证服务器配置，设置jwt签发者、默认端点请求地址等
+     * 添加认证服务器配置，设置jwt签发者、默认端点请求地址OAuth2TokenGenerator等
      *
      * @return AuthorizationServerSettings
      */
