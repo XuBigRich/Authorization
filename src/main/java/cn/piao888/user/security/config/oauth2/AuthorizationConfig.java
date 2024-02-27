@@ -109,17 +109,19 @@ public class AuthorizationConfig {
     }
 
     /**
+     * 通过依赖手段，将资源服务器依赖共享到仓库 ，暂时不启用
      * 配置认证相关的过滤器链
      *
      * @param http spring security核心配置类
      * @return 过滤器链
      * @throws Exception 抛出
      */
-    @Bean
+//    @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll().anyRequest().authenticated())
+                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
+                        .anyRequest().authenticated())
                 // 指定登录页面
                 .formLogin(formLogin -> formLogin.loginPage("/login"));
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
@@ -248,17 +250,6 @@ public class AuthorizationConfig {
             throw new IllegalStateException(ex);
         }
         return keyPair;
-    }
-
-    /**
-     * 配置jwt解析器
-     *
-     * @param jwkSource jwk源
-     * @return JwtDecoder
-     */
-    @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
     /**

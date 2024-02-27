@@ -2,6 +2,7 @@ package cn.piao888.user.controller;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
@@ -33,7 +34,6 @@ public class AuthorizationController {
     private final RegisteredClientRepository registeredClientRepository;
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
-
 
     @GetMapping("/login")
     public String login() {
