@@ -42,7 +42,7 @@ ext {
 }
 dependencies {
     implementation 'cn.piao888:common-core:0.0.1-SNAPSHOT'
-    implementation "cn.piao888:client-auth-common:0.0.1-SNAPSHOT"
+    implementation 'cn.piao888:client-auth-common:0.0.1-SNAPSHOT'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.4'
     implementation 'mysql:mysql-connector-java:8.0.26'
