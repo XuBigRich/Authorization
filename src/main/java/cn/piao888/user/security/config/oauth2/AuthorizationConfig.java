@@ -43,6 +43,7 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.KeyPair;
@@ -81,6 +82,7 @@ public class AuthorizationConfig {
      */
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository registeredClientRepository, AuthorizationServerSettings authorizationServerSettings) throws Exception {
+        //提供 登陆认证功能 、授权功能
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         // 新建设备码converter和provider
@@ -89,22 +91,26 @@ public class AuthorizationConfig {
         // 配置默认的设置，忽略认证端点的csrf校验
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                // 开启OpenID Connect 1.0协议相关端点
+                // 开启OpenID Connect 1.0协议相关端点  提供开放接口文档 获取功能、退出接口功能、查询用户资料接口功能
                 .oidc(Customizer.withDefaults())
                 // 设置自定义用户确认授权页
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
                 .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint -> deviceAuthorizationEndpoint.verificationUri("/activate"))
                 .deviceVerificationEndpoint(deviceVerificationEndpoint -> deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
                 .clientAuthentication(clientAuthentication ->
-                        // 客户端认证添加设备码的converter和provider
+//                         客户端认证添加设备码的converter和provider
                         clientAuthentication.authenticationConverter(deviceClientAuthenticationConverter).authenticationProvider(deviceClientAuthenticationProvider));
         return http.build();
     }
-//    @Bean
+
+    @Bean
     public SecurityFilterChain resourcesServerSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 当未登录时访问认证端点时重定向至login页面
-                .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+                .exceptionHandling((exceptions) ->
+                        exceptions.defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/login")
+                                , new MediaTypeRequestMatcher(MediaType.ALL)))
                 // 处理使用access token访问用户信息端点和客户端注册端点
                 .oauth2ResourceServer((resourceServer) -> resourceServer
                         .jwt(Customizer.withDefaults())
@@ -122,7 +128,7 @@ public class AuthorizationConfig {
      * @return 过滤器链
      * @throws Exception 抛出
      */
-//    @Bean
+    @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
@@ -130,9 +136,8 @@ public class AuthorizationConfig {
                         .anyRequest().authenticated())
                 // 指定登录页面
                 .formLogin(formLogin -> formLogin.loginPage("/login"));
-        // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
+        // 添加BearerTokenAuthenticationFilanonymouster，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer.jwt(Customizer.withDefaults()));
-
         return http.build();
     }
 
@@ -212,6 +217,7 @@ public class AuthorizationConfig {
         // 基于db的oauth2认证服务，还有一个基于内存的服务实现InMemoryOAuth2AuthorizationService
         return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
     }
+
     /**
      * 自定义jwt，将权限信息放至jwt中
      *
