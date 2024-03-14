@@ -100,11 +100,11 @@ public class AuthorizationConfig {
                 .clientAuthentication(clientAuthentication ->
 //                         客户端认证添加设备码的converter和provider
                         clientAuthentication.authenticationConverter(deviceClientAuthenticationConverter).authenticationProvider(deviceClientAuthenticationProvider));
+        resourcesServerSecurityFilterChain(http);
         return http.build();
     }
 
-    @Bean
-    public SecurityFilterChain resourcesServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public void resourcesServerSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) ->
@@ -118,7 +118,6 @@ public class AuthorizationConfig {
                         .authenticationEntryPoint(SecurityUtils::exceptionHandler)
                 );
 
-        return http.build();
     }
 
     /**
