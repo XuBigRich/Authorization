@@ -131,7 +131,8 @@ public class AuthorizationConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/no-authorization").permitAll()
+                        .requestMatchers("/has-write").hasAuthority("message.write")
                         .anyRequest().authenticated())
                 // 指定登录页面
                 .formLogin(formLogin -> formLogin.loginPage("/login"));

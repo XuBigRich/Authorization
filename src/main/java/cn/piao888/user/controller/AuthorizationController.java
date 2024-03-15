@@ -2,6 +2,7 @@ package cn.piao888.user.controller;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -39,6 +42,25 @@ public class AuthorizationController {
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+    @GetMapping("/no-authorization")
+    @ResponseBody
+    public String noAuthorization() {
+        return "login";
+    }
+
+    @GetMapping("/has-read")
+    @ResponseBody
+    @PreAuthorize("hasAuthority('message.read')")
+    public String hasRead() {
+        return "hasRead";
+    }
+
+    @GetMapping("/has-write")
+    @ResponseBody
+    public String hasWrite() {
+        return "hasWrite";
     }
 
     @GetMapping(value = "/oauth2/consent")
