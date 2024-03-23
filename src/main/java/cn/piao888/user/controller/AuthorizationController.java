@@ -3,6 +3,7 @@ package cn.piao888.user.controller;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -52,6 +53,7 @@ public class AuthorizationController {
 
     @GetMapping("/has-read")
     @ResponseBody
+    //需要显视追加SCOPE
     @PreAuthorize("hasAuthority('message.read')")
     public String hasRead() {
         return "hasRead";
@@ -61,6 +63,21 @@ public class AuthorizationController {
     @ResponseBody
     public String hasWrite() {
         return "hasWrite";
+    }
+
+    @GetMapping("/has-admin-role")
+    //自动追加ROLE_ 变为 admin
+    @PreAuthorize("hasAnyRole('admin')")
+//    @PreAuthorize("hasAuthority('ROLE_admin')")
+    @ResponseBody
+    public String hasAdminRole() {
+        return "hasAdminRole";
+    }
+
+    @GetMapping("/has-normal-role")
+    @ResponseBody
+    public String hasNormalRole() {
+        return "hasNormalRole";
     }
 
     @GetMapping(value = "/oauth2/consent")

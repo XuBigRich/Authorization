@@ -41,6 +41,8 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -133,6 +135,7 @@ public class AuthorizationConfig {
                         // 放行静态资源
                         .requestMatchers("/assets/**", "/webjars/**", "/login", "/no-authorization").permitAll()
                         .requestMatchers("/has-write").hasAuthority("message.write")
+                        .requestMatchers("/has-normal-role").hasRole("normal")
                         .anyRequest().authenticated())
                 // 指定登录页面
                 .formLogin(formLogin -> formLogin.loginPage("/login"));
@@ -236,7 +239,7 @@ public class AuthorizationConfig {
                 Set<String> authoritySet = Optional.ofNullable(authorities).orElse(Collections.emptyList()).stream()
                         // 获取权限字符串
                         .map(GrantedAuthority::getAuthority)
-                        // 去重
+                        // 去JwtGrantedAuthoritiesConverter重
                         .collect(Collectors.toSet());
 
                 // 合并scope与用户信息
@@ -250,6 +253,25 @@ public class AuthorizationConfig {
             }
         };
     }
+
+    /**
+     * 自定义jwt解析器，设置解析出来的权限信息的前缀与在jwt中的key
+     *
+     * @return jwt解析器 JwtAuthenticationConverter
+     */
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // 设置解析权限信息的前缀，设置为空是去掉前缀
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        // 设置权限信息在jwt claims中的key
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
 
     /**
      * 配置基于db的授权确认管理服务
