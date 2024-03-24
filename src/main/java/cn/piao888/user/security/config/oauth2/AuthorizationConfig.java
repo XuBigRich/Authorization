@@ -19,16 +19,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -48,10 +45,12 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -154,9 +153,6 @@ public class AuthorizationConfig {
         return new BCryptPasswordEncoder();
     }
 
-    public static void main(String[] args) {
-        System.out.println(new BCryptPasswordEncoder().encode("rr998xhz1997"));
-    }
 
     /**
      * 配置客户端Repository
@@ -292,13 +288,27 @@ public class AuthorizationConfig {
      * @return JWKSource
      */
     @Bean
-    public JWKSource<SecurityContext> jwkSource() {
+    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec publicKey = new X509EncodedKeySpec(Base64.getDecoder().decode("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzT+lMxzjhPcIzn+mz/kJ1wq9GPyF6WADU4prUKPj1HrqDOgYWAllkG1EKS14dpy8obRxA1k2Kv/mnefCGaLvSsqZAh/Mgv5AxC9CdUnblfifaWdiRSuOjfWuDPA17d21L3qwdk3Q1tErgsBkFiTeryUzN2e+AmrqOoJTLKQrQutWsDwTzD5NAz9wCP06NyKZ4xFGgyJwqXEJY3kNuC+3+aDjhqB2tN+QzBCi3ItZDjNS0mPAFjI9VqSjyJj4wAjEpculYx/voB06FQ0TQHWQdOMedoPl6J9FPQcHEMQtletYfGjmIbK5B9lricTeQAFerODev3Sz65E2a5ayF4BgWQIDAQAB"));
+        PKCS8EncodedKeySpec privateKey = new PKCS8EncodedKeySpec(Base64.getDecoder().decode("MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNP6UzHOOE9wjOf6bP+QnXCr0Y/IXpYANTimtQo+PUeuoM6BhYCWWQbUQpLXh2nLyhtHEDWTYq/+ad58IZou9KypkCH8yC/kDEL0J1SduV+J9pZ2JFK46N9a4M8DXt3bUverB2TdDW0SuCwGQWJN6vJTM3Z74Cauo6glMspCtC61awPBPMPk0DP3AI/To3IpnjEUaDInCpcQljeQ24L7f5oOOGoHa035DMEKLci1kOM1LSY8AWMj1WpKPImPjACMSly6VjH++gHToVDRNAdZB04x52g+Xon0U9BwcQxC2V61h8aOYhsrkH2WuJxN5AAV6s4N6/dLPrkTZrlrIXgGBZAgMBAAECggEAF+7l+pHRzf1oX3vvHa0ygorUBgfcLZxuht1LKjoSJQK4LA0cWZeu6ipzmkGdHGemb0y1KOjMMjNo1tzhe0/Oi3AYa3D9zgCL2NSR8U9Nda1qGUZe5SXxF4igZQ3VnAkQSZsK3KCyS3pUkoiQoyxlcxLpZ/qG441IBs6PmFMEYGcPJI8NqXxCYPtoPZerToQ+Kd2ks9+jsJmLvtVKQzjCYBpfEI6A7hI8pYbC5735Q31+G+C6vKsb//B0XIFya1h0LdzWAPIqd0f2OzG9oe9EeYJGsrl5xPHRsO82UemDv8S5kKghm+5RWErZubChvjV7dQB0qiGj71Ri9DTrplLHSQKBgQD7E6h3iXCM/Wj8UGDANxC/YT5e8b4YSN0WiCMF0PFx32qtdTZSuuQFGptx3lMlZvW7lyVOKzWm4PH8R3FX8AsC1CcO7P95XGjlUWpoB6eDYvcUZRFYcKUS0MuKO02CGMuvYuPwhl90cjos85ik+2dhP82N/mvchqVa1R5/vSTn3wKBgQDRRfD/medqOTuC5W+f6j5RSo6MIbHPSn5/Z/9dk6mNKJdi7Pto5fph9hVvwOMDbrxdXbhLR7efzetTHySVD61gDthhvb3+jqk5ys4feX62Jbp0KOQZFCnyAyYj471dQkiNP8kWbwq7r8/RS2QNWyOMYkqqx6g6UWoBfSX+p9wexwKBgHHMTyce3CyLDvKNW8zDKIwVfzd5Sjenjs2PlpAkS8rZAHjuD1kf7AmELcBGjFj/eZE0yGvNmduxSPyXRQAehF8b2TgiowhWohSN+jR8g6hBSsuro1j6dVc524cjqdW1d1xe7gEuZkVZIJUPM7hTWl/xkzEwh6LERF4PCmvLRtbxAoGAQTl1VZTYRYk0/SUZV1QgvCFqsE5IJv1m07rMIpRFQhOmq1SFPzp+gU27fKs3lfhLiSYOrJfbqVj6wVtxgWvzc37s/fmvX8mDANouyCyLy6WSqWWdQhvAvwcwOftfJ9Pi3PNGb1GInNq9ANRoiKkhOT3hW70Ct7psOa6Ryv7yYj0CgYEA0mFvfZwQxa+kiiZFQidY9Dt9ozwf1FboKyvGhErR2LwTjl8M2MJWkGDpPaG7NaZyNirI2enLbChpwEuEU9a5uzvmTBWqOO82e3cjH843XRdZ0MqrSpmXNqVxxvTXuHVLKJXdQjPs4Mte8FUgbwhkn8GoRna+vRHdFWrnvfupkcY="));
+        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyFactory.generatePublic(publicKey))
+                .privateKey((RSAPrivateKey)keyFactory.generatePrivate(privateKey))
+                .keyID("1").build();
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return new ImmutableJWKSet<>(jwkSet);
+    }
+
+    public static void main(String[] args) {
+        //生成密码
+        System.out.println(new BCryptPasswordEncoder().encode("rr998xhz1997"));
+        //生成jwt 密钥对
         KeyPair keyPair = generateRsaKey();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
         RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        RSAKey rsaKey = new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return new ImmutableJWKSet<>(jwkSet);
+        System.out.println(Base64.getEncoder().encodeToString(publicKey.getEncoded()));
+        System.out.println();
+        System.out.println(Base64.getEncoder().encodeToString(privateKey.getEncoded()));
     }
 
     /**

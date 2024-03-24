@@ -45,40 +45,6 @@ public class AuthorizationController {
         return "login";
     }
 
-    @GetMapping("/no-authorization")
-    @ResponseBody
-    public String noAuthorization() {
-        return "login";
-    }
-
-    @GetMapping("/has-read")
-    @ResponseBody
-    //需要显视追加SCOPE
-    @PreAuthorize("hasAuthority('message.read')")
-    public String hasRead() {
-        return "hasRead";
-    }
-
-    @GetMapping("/has-write")
-    @ResponseBody
-    public String hasWrite() {
-        return "hasWrite";
-    }
-
-    @GetMapping("/has-admin-role")
-    //自动追加ROLE_ 变为 admin
-    @PreAuthorize("hasAnyRole('admin')")
-//    @PreAuthorize("hasAuthority('ROLE_admin')")
-    @ResponseBody
-    public String hasAdminRole() {
-        return "hasAdminRole";
-    }
-
-    @GetMapping("/has-normal-role")
-    @ResponseBody
-    public String hasNormalRole() {
-        return "hasNormalRole";
-    }
 
     @GetMapping(value = "/oauth2/consent")
     public String consent(Principal principal, Model model,
