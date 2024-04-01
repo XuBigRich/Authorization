@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @Author： hongzhi.xu
@@ -14,12 +15,12 @@ import java.util.Collection;
 @Data
 public class UserInfo implements UserDetails {
     private Long id;
-    private String token;
     private String nickName;
     private String userName;
     private String password;
     private long loginTime;
     private long expireTime;
+    private List<GrantedAuthority> authorities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
