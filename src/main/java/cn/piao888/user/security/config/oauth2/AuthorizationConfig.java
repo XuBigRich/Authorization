@@ -1,5 +1,6 @@
 package cn.piao888.user.security.config.oauth2;
 
+import cn.piao888.user.security.UserInfo;
 import cn.piao888.user.security.config.device.DeviceClientAuthenticationConverter;
 import cn.piao888.user.security.config.device.DeviceClientAuthenticationProvider;
 import cn.piao888.user.security.config.utils.SecurityUtils;
@@ -8,6 +9,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -226,7 +228,7 @@ public class AuthorizationConfig {
     public OAuth2TokenCustomizer<JwtEncodingContext> oAuth2TokenCustomizer() {
         return context -> {
             // 检查登录用户信息是不是UserDetails，排除掉没有用户参与的流程
-            if (context.getPrincipal().getPrincipal() instanceof UserDetails user) {
+            if (context.getPrincipal().getPrincipal() instanceof UserInfo user) {
                 // 获取申请的scopes
                 Set<String> scopes = context.getAuthorizedScopes();
                 // 获取用户的权限
@@ -240,10 +242,12 @@ public class AuthorizationConfig {
 
                 // 合并scope与用户信息
                 authoritySet.addAll(scopes);
-
                 JwtClaimsSet.Builder claims = context.getClaims();
                 // 将权限信息放入jwt的claims中（也可以生成一个以指定字符分割的字符串放入）
                 claims.claim("authorities", authoritySet);
+                claims.subject(String.valueOf(user.getId()));
+                claims.claim("username", user.getUsername());
+                claims.claim("nickname", user.getNickName());
                 // 放入其它自定内容
                 // 角色、头像...
             }
@@ -293,7 +297,7 @@ public class AuthorizationConfig {
         X509EncodedKeySpec publicKey = new X509EncodedKeySpec(Base64.getDecoder().decode("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzT+lMxzjhPcIzn+mz/kJ1wq9GPyF6WADU4prUKPj1HrqDOgYWAllkG1EKS14dpy8obRxA1k2Kv/mnefCGaLvSsqZAh/Mgv5AxC9CdUnblfifaWdiRSuOjfWuDPA17d21L3qwdk3Q1tErgsBkFiTeryUzN2e+AmrqOoJTLKQrQutWsDwTzD5NAz9wCP06NyKZ4xFGgyJwqXEJY3kNuC+3+aDjhqB2tN+QzBCi3ItZDjNS0mPAFjI9VqSjyJj4wAjEpculYx/voB06FQ0TQHWQdOMedoPl6J9FPQcHEMQtletYfGjmIbK5B9lricTeQAFerODev3Sz65E2a5ayF4BgWQIDAQAB"));
         PKCS8EncodedKeySpec privateKey = new PKCS8EncodedKeySpec(Base64.getDecoder().decode("MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNP6UzHOOE9wjOf6bP+QnXCr0Y/IXpYANTimtQo+PUeuoM6BhYCWWQbUQpLXh2nLyhtHEDWTYq/+ad58IZou9KypkCH8yC/kDEL0J1SduV+J9pZ2JFK46N9a4M8DXt3bUverB2TdDW0SuCwGQWJN6vJTM3Z74Cauo6glMspCtC61awPBPMPk0DP3AI/To3IpnjEUaDInCpcQljeQ24L7f5oOOGoHa035DMEKLci1kOM1LSY8AWMj1WpKPImPjACMSly6VjH++gHToVDRNAdZB04x52g+Xon0U9BwcQxC2V61h8aOYhsrkH2WuJxN5AAV6s4N6/dLPrkTZrlrIXgGBZAgMBAAECggEAF+7l+pHRzf1oX3vvHa0ygorUBgfcLZxuht1LKjoSJQK4LA0cWZeu6ipzmkGdHGemb0y1KOjMMjNo1tzhe0/Oi3AYa3D9zgCL2NSR8U9Nda1qGUZe5SXxF4igZQ3VnAkQSZsK3KCyS3pUkoiQoyxlcxLpZ/qG441IBs6PmFMEYGcPJI8NqXxCYPtoPZerToQ+Kd2ks9+jsJmLvtVKQzjCYBpfEI6A7hI8pYbC5735Q31+G+C6vKsb//B0XIFya1h0LdzWAPIqd0f2OzG9oe9EeYJGsrl5xPHRsO82UemDv8S5kKghm+5RWErZubChvjV7dQB0qiGj71Ri9DTrplLHSQKBgQD7E6h3iXCM/Wj8UGDANxC/YT5e8b4YSN0WiCMF0PFx32qtdTZSuuQFGptx3lMlZvW7lyVOKzWm4PH8R3FX8AsC1CcO7P95XGjlUWpoB6eDYvcUZRFYcKUS0MuKO02CGMuvYuPwhl90cjos85ik+2dhP82N/mvchqVa1R5/vSTn3wKBgQDRRfD/medqOTuC5W+f6j5RSo6MIbHPSn5/Z/9dk6mNKJdi7Pto5fph9hVvwOMDbrxdXbhLR7efzetTHySVD61gDthhvb3+jqk5ys4feX62Jbp0KOQZFCnyAyYj471dQkiNP8kWbwq7r8/RS2QNWyOMYkqqx6g6UWoBfSX+p9wexwKBgHHMTyce3CyLDvKNW8zDKIwVfzd5Sjenjs2PlpAkS8rZAHjuD1kf7AmELcBGjFj/eZE0yGvNmduxSPyXRQAehF8b2TgiowhWohSN+jR8g6hBSsuro1j6dVc524cjqdW1d1xe7gEuZkVZIJUPM7hTWl/xkzEwh6LERF4PCmvLRtbxAoGAQTl1VZTYRYk0/SUZV1QgvCFqsE5IJv1m07rMIpRFQhOmq1SFPzp+gU27fKs3lfhLiSYOrJfbqVj6wVtxgWvzc37s/fmvX8mDANouyCyLy6WSqWWdQhvAvwcwOftfJ9Pi3PNGb1GInNq9ANRoiKkhOT3hW70Ct7psOa6Ryv7yYj0CgYEA0mFvfZwQxa+kiiZFQidY9Dt9ozwf1FboKyvGhErR2LwTjl8M2MJWkGDpPaG7NaZyNirI2enLbChpwEuEU9a5uzvmTBWqOO82e3cjH843XRdZ0MqrSpmXNqVxxvTXuHVLKJXdQjPs4Mte8FUgbwhkn8GoRna+vRHdFWrnvfupkcY="));
         RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyFactory.generatePublic(publicKey))
-                .privateKey((RSAPrivateKey)keyFactory.generatePrivate(privateKey))
+                .privateKey((RSAPrivateKey) keyFactory.generatePrivate(privateKey))
                 .keyID("1").build();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);

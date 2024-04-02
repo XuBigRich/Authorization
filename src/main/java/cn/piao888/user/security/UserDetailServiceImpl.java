@@ -37,22 +37,22 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (userDO == null) {
             return null;
         }
-//        UserInfo userDetails = new UserInfo();
-//        List<String> roles = Arrays.asList("admin", "normal");
-//        List<GrantedAuthority> authorities = new ArrayList<>(roles.size());
-//        for (String role : roles) {
-//            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-//        }
-//        userDetails.setUserName(userDO.getUsername());
-//        userDetails.setNickName(userDO.getNickname());
-//        userDetails.setId(userDO.getId());
-//        userDetails.setPassword(userDO.getPassword());
-//        userDetails.setAuthorities(authorities);
-        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(userDO.getUsername())
-                .password(userDO.getPassword())
-                .roles("admin", "normal")
-                .authorities("app", "web", "message.write")
-                .build();
+        UserInfo userDetails = new UserInfo();
+        List<String> roles = Arrays.asList("admin", "normal");
+        List<GrantedAuthority> authorities = new ArrayList<>(roles.size());
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+        }
+        userDetails.setUsername(userDO.getUsername());
+        userDetails.setNickName(userDO.getNickname());
+        userDetails.setId(userDO.getId());
+        userDetails.setPassword(userDO.getPassword());
+        userDetails.setAuthorities(authorities);
+//        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(userDO.getUsername())
+//                .password(userDO.getPassword())
+//                .roles("admin", "normal")
+//                .authorities("app", "web", "message.write")
+//                .build();
         return userDetails;
     }
 }

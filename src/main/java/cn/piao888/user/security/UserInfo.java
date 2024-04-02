@@ -1,9 +1,13 @@
 package cn.piao888.user.security;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,23 +17,28 @@ import java.util.List;
  * @Version 1.0
  */
 @Data
-public class UserInfo implements UserDetails {
+@JsonSerialize
+@JsonDeserialize
+public class UserInfo implements UserDetails, Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String nickName;
-    private String userName;
+    private String username;
     private String password;
-    private long loginTime;
-    private long expireTime;
+    private boolean accountNonExpired;
+    private boolean credentialsNonExpired;
+    private boolean accountNonLocked;
+    private boolean enabled;
     private List<GrantedAuthority> authorities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return authorities;
     }
 
     @Override
     public String getUsername() {
-        return this.userName;
+        return this.username;
     }
 
     @Override
