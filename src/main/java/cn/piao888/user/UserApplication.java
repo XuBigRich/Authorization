@@ -7,10 +7,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @SpringBootApplication(scanBasePackages = "cn.piao888.user")
 //@SpringBootApplication
 @EnableWebSecurity
-public class UserApplication {
+public class AuthorizationApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UserApplication.class, args);
+        SpringApplication.run(AuthorizationApplication.class, args);
     }
 
 }

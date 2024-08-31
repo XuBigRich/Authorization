@@ -5,7 +5,7 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /app
 
 # 将编译好的 JAR 文件复制到容器中
-COPY build/libs/user-service.jar .
+COPY build/libs/authorization-service.jar .
 
 # 暴露应用程序的端口
 EXPOSE 8080
