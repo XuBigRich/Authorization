@@ -1,13 +1,13 @@
 package cn.piao888.user.utils;
 
-import cn.piao888.user.security.UserInfo;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import cn.piao888.user.security.LoginUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import javax.json.Json;
 import java.util.Date;
@@ -16,25 +16,23 @@ import java.util.Map;
 
 public class JwtUtil {
 
-//    private static final String SECRET_KEY = "TOk4d0RpBTuNjUgvskt4IxpJxSgMiU/7j8kIDKhfa6I="; // 用于签名的密钥
+    //    private static final String SECRET_KEY = "TOk4d0RpBTuNjUgvskt4IxpJxSgMiU/7j8kIDKhfa6I="; // 用于签名的密钥
     private static final long EXPIRATION_TIME = 864_000_000; // Token 过期时间 (10 days)
 
-    public static String generateToken(UserInfo userInfo,String secret) {
+    public static String generateToken(LoginUser loginUser, String secret) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + EXPIRATION_TIME);
-        String jsonString = JSON.toJSONString(userInfo);
-        JSONObject jsonObject = JSON.parseObject(jsonString);
         return Jwts.builder()
-                .setSubject(String.valueOf(userInfo.getId()))
-                .setClaims(jsonObject)
+                .setSubject(String.valueOf(loginUser.getId()))
+                .claim("user", loginUser)
                 .setIssuedAt(now)
                 .setExpiration(expirationDate)
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS512)
                 .compact();
     }
 
 
-    public static String extractUserId(String token,String secret) {
+    public static String extractUserId(String token, String secret) {
         return Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
                 .build()
@@ -43,17 +41,21 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public static UserInfo extractUserInfo(String token,String secret) {
-        final Claims body = Jwts.parserBuilder()
+    public static LoginUser extractLoginUser(String token, String secret) {
+        final Claims claims = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        UserInfo userInfo = JSON.parseObject(JSON.toJSONString(body), UserInfo.class);
-        return userInfo;
+        Jwt jwt = new Jwt(token, claims.getIssuedAt().toInstant(), claims.getExpiration().toInstant(), claims, claims);
+        Map<String, Object> principalClaim = jwt.getClaim("user");
+        ObjectMapper objectMapper = new ObjectMapper();
+        // 将 Map 转换为 User 对象
+        LoginUser user = objectMapper.convertValue(principalClaim, LoginUser.class);
+        return user;
     }
 
-    public static boolean isTokenExpired(String token,String secret) {
+    public static boolean isTokenExpired(String token, String secret) {
         Date expirationDate = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
                 .build()

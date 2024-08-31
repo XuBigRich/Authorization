@@ -1,7 +1,7 @@
 package cn.piao888.user.dubbo;
 
 
-import cn.piao888.user.security.UserInfo;
+import cn.piao888.user.domain.User;
 
 /**
  * @Author： hongzhi.xu
@@ -9,5 +9,5 @@ import cn.piao888.user.security.UserInfo;
  * @Version 1.0
  */
 public interface UserDubboService {
-    UserInfo getUserByUsername(String username);
+    User getUserByUsername(String username);
 }

@@ -1,8 +1,8 @@
 package cn.piao888.user.service.impl;
 
+import cn.piao888.user.domain.User;
 import cn.piao888.user.dubbo.UserDubboService;
 import cn.piao888.user.mapper.UserMapper;
-import cn.piao888.user.security.UserInfo;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserDubboService {
     private UserMapper userMapper;
 
     @Override
-    public UserInfo getUserByUsername(String username) {
+    public User getUserByUsername(String username) {
         return userMapper.getUserByUsername(username);
     }
 }

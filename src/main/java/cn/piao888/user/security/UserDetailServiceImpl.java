@@ -30,11 +30,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (userDO == null) {
             return null;
         }
-        UserInfo userDetails = new UserInfo();
-        userDetails.setUserName(userDO.getUsername());
-        userDetails.setNickName(userDO.getNickname());
+        LoginUser userDetails = new LoginUser();
+        userDetails.setUsername(userDO.getUsername());
+        userDetails.setNickname(userDO.getNickName());
         userDetails.setId(userDO.getId());
         userDetails.setPassword(userDO.getPassword());
+        userDetails.setExpirationTime(userDO.getExpirationTime());
         return userDetails;
     }
 }

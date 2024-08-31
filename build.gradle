@@ -51,6 +51,7 @@ dependencies {
 //    implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
     implementation 'org.springframework.security:spring-security-cas'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
     implementation "io.seata:seata-spring-boot-starter:${seataVersion}"
     implementation("org.apache.dubbo:dubbo:${dubboVersion}") {

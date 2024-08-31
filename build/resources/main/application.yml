@@ -7,11 +7,12 @@ spring:
         server-addr: localhost:8848
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/micro-server?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    #    url: jdbc:mysql://127.0.0.1:3306/micro-server?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    url: jdbc:mysql://127.0.0.1:3306/user?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
     username: root
     password: rr998xhz1997
   application:
-    name: user
+    name: authorization
 mybatis-plus:
   # 搜索指定包别名
   typeAliasesPackage: cn.piao888.user
@@ -21,8 +22,8 @@ mybatis-plus:
 #  config-location: classpath:mapper/mybatis-config.xml
 dubbo:
   application:
-    id: dubbo-user-example
-    name: dubbo-user-example
+    id: dubbo-authorization-service
+    name: dubbo-authorization-service
     qosEnable: false
     metadata-type: remote
   protocol:
@@ -30,7 +31,7 @@ dubbo:
     name: dubbo
     port: 20888
   registry:
-    id: dubbo-user-example-registry
+    id: dubbo-authorization-service-registry
     #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
     address: nacos://127.0.0.1:8848
   config-center:
@@ -71,7 +72,7 @@ token:
   # 令牌自定义标识
   header: Authorization
   # 令牌密钥
-  secret: TOk4d0RpBTuNjUgvskt4IxpJxSgMiU/7j8kIDKhfa6I=
+  secret: wQipts1UyA6vekEJLChj3wqY+GCvPSwmRhoNdHs6y8FoncEZWwQ2cGdmIjRuOPMjhFibESo4UvdJ0C2msbhBcQ==
   # 令牌有效期（默认30分钟）
   expireTime: 30
 management:
@@ -84,4 +85,4 @@ logging:
   level:
     org:
       springframework:
-         DEBUG
+        DEBUG

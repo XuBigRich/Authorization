@@ -72,7 +72,7 @@ token:
   # 令牌自定义标识
   header: Authorization
   # 令牌密钥
-  secret: TOk4d0RpBTuNjUgvskt4IxpJxSgMiU/7j8kIDKhfa6I=
+  secret: wQipts1UyA6vekEJLChj3wqY+GCvPSwmRhoNdHs6y8FoncEZWwQ2cGdmIjRuOPMjhFibESo4UvdJ0C2msbhBcQ==
   # 令牌有效期（默认30分钟）
   expireTime: 30
 management:

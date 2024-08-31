@@ -1,11 +1,10 @@
 package cn.piao888.user.controller;
 
-import cn.piao888.user.security.UserInfo;
+import cn.piao888.user.security.LoginUser;
 import cn.piao888.user.security.service.TokenService;
-import cn.piao888.user.utils.JwtUtil;
 import cn.piao888.user.vo.req.LoginBody;
 import cn.piao888.user.vo.response.ObjectResponse;
-import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -50,15 +49,27 @@ public class AuthorizationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ObjectResponse<String> login(@RequestBody LoginBody loginRequest) {
+    public void  login(@RequestBody LoginBody loginRequest, HttpServletResponse response) {
         Authentication authenticationRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUsername(), loginRequest.getPassword());
         Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
-        UserInfo loginUser = (UserInfo) authenticationResponse.getPrincipal();
+        LoginUser loginUser = (LoginUser) authenticationResponse.getPrincipal();
         // 生成token
         // 设置令牌过期时间，例如设置为一小时
         final String token = tokenService.createToken(loginUser);
-        return ObjectResponse.success(token);
+
+        // 创建 Cookie 并设置属性
+        Cookie authCookie = new Cookie("Authentication", token);
+        authCookie.setHttpOnly(true);
+        authCookie.setMaxAge(60 * 60); // 设置Cookie过期时间为1小时
+        authCookie.setPath("/"); // 设置Cookie的路径
+
+        // 将 Cookie 添加到响应中
+        response.addCookie(authCookie);
+
+        // 重定向到指定的URL
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setHeader("Location", "http://gonkamasn.com/");
     }
 
     @GetMapping("/authorize1")

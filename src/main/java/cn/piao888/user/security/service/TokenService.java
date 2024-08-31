@@ -1,10 +1,9 @@
 package cn.piao888.user.security.service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Date;
+
 import cn.piao888.user.constants.Constants;
-import cn.piao888.user.security.UserInfo;
+import cn.piao888.user.security.LoginUser;
 import cn.piao888.user.utils.JwtUtil;
 import cn.piao888.user.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,31 +41,22 @@ public class TokenService {
     private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
 
 
-
     /**
      * 获取用户身份信息
      *
      * @return 用户信息
      */
-    public UserInfo getLoginUser(HttpServletRequest request) {
+    public LoginUser getLoginUser(HttpServletRequest request) {
         // 获取请求携带的令牌
         String token = getToken(request);
         if (StringUtils.isNotEmpty(token)) {
             //这个地方将token转换为Claims信息
-            UserInfo user = JwtUtil.extractUserInfo(token,secret);
+            LoginUser user = JwtUtil.extractLoginUser(token, secret);
             return user;
         }
         return null;
     }
 
-    /**
-     * 设置用户身份信息
-     */
-    public void setLoginUser(UserInfo loginUser) {
-        if (loginUser != null && StringUtils.isNotEmpty(loginUser.getToken())) {
-            refreshToken(loginUser);
-        }
-    }
 
 
     /**
@@ -75,11 +65,14 @@ public class TokenService {
      * @param loginUser 用户信息
      * @return 令牌
      */
-    public String createToken(UserInfo loginUser) {
-        loginUser.setLoginTime(System.currentTimeMillis());
-        //延长失效日期
-        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
-        return JwtUtil.generateToken(loginUser,secret);
+    public String createToken(LoginUser loginUser) {
+        return Jwts.builder()
+                .setSubject(loginUser.getName())
+                .setIssuedAt(new Date())
+                .claim("user", loginUser)
+                .setExpiration(new Date((new Date()).getTime() + expireTime))
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
     }
 
 
@@ -88,27 +81,11 @@ public class TokenService {
      *
      * @param loginUser 登录信息
      */
-    public String refreshToken(UserInfo loginUser) {
-        loginUser.setLoginTime(System.currentTimeMillis());
-        //延长失效日期
-        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
-        final String token = JwtUtil.generateToken(loginUser,secret);
+    public String refreshToken(LoginUser loginUser) {
+        final String token = JwtUtil.generateToken(loginUser, secret);
         return token;
     }
 
-
-    /**
-     * 从数据声明生成令牌
-     *
-     * @param claims 数据声明
-     * @return 令牌
-     */
-    private String createToken(Map<String, Object> claims) {
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
-        return token;
-    }
 
     /**
      * 从令牌中获取数据声明
@@ -121,17 +98,6 @@ public class TokenService {
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    /**
-     * 从令牌中获取用户名
-     *
-     * @param token 令牌
-     * @return 用户名
-     */
-    public String getUsernameFromToken(String token) {
-        Claims claims = parseToken(token);
-        return claims.getSubject();
     }
 
     /**

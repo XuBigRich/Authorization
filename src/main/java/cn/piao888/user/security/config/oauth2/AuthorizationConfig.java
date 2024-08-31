@@ -6,6 +6,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +23,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,6 +44,7 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -49,11 +52,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
 import java.util.UUID;
 
 /**
@@ -65,7 +69,7 @@ import java.util.UUID;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
+//@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class AuthorizationConfig {
     private static final String CUSTOM_LOGIN_PAGE_URI = "http://172.16.2.215:9998/login";
     private static final String CUSTOM_CONSENT_PAGE_URI = "http://172.16.2.215:9998/grant";
@@ -109,6 +113,16 @@ public class AuthorizationConfig {
 
         // 设置自定义用户确认授权页 这个同意页  如果是前后端分离项目 ,由前端去 编码, 不应该写死在后台
 //                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage("http://192.168.2.194:9998/grant"));
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                //感觉用Filter被废弃了 ，因为 官方实例 没有介绍这种方式
+//                .addFilter(new UsernamePasswordAuthenticationFilter(authenticationManager(userDetailsService,passwordEncoder())))
+                .authorizeHttpRequests((authorize) -> authorize
+                        // 放行静态资源
+                        .requestMatchers("/assets/**", "/webjars/**").permitAll()
+                        .requestMatchers("/login").permitAll() // 允许所有用户访问 /login 端点
+                        .anyRequest().authenticated()
+                );
 
         http
                 // 当未登录时访问认证端点时重定向至login页面
@@ -139,7 +153,7 @@ public class AuthorizationConfig {
      * @return 过滤器链
      * @throws Exception 抛出
      */
-    @Bean
+//    @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         //配置
         http.csrf(AbstractHttpConfigurer::disable)
@@ -148,24 +162,25 @@ public class AuthorizationConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
                         .requestMatchers("/assets/**", "/webjars/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login").anonymous()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 允许所有 OPTIONS 请求
+                        .requestMatchers("/login").permitAll() // 允许所有用户访问 /login 端点
                         .anyRequest().authenticated()
                 );
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true);
-        configuration.addAllowedOriginPattern("*");
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowCredentials(true);
+//        configuration.addAllowedOriginPattern("*");
+//        configuration.addAllowedHeader("*");
+//        configuration.addAllowedMethod("*");
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//
+//        return source;
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(
@@ -189,6 +204,11 @@ public class AuthorizationConfig {
         return new BCryptPasswordEncoder();
     }
 
+    public static void main(String[] args) {
+        System.out.println(new BCryptPasswordEncoder().encode("123456"));
+        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        System.out.println("Generated Key: " + Encoders.BASE64.encode(key.getEncoded()));
+    }
     /**
      * 配置客户端Repository
      *

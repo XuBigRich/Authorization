@@ -8,14 +8,14 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.piao888.user.domain.User">
         <id column="id" property="id"/>
-        <result column="nickname" property="nickname"/>
+        <result column="nickname" property="nickName"/>
         <result column="username" property="username"/>
         <result column="password" property="password"/>
     </resultMap>
 
-    <select id="getUserByUsername" resultType="cn.piao888.user.security.UserInfo">
+    <select id="getUserByUsername" resultType="cn.piao888.user.domain.User">
         select *
-        from t_user
+        from user
         where username = #{username}
     </select>
 

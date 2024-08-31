@@ -21,22 +21,22 @@ public class LoginBody {
      */
     private String password;
 
-    private String clientId;
-
-    /**
-     * 验证码
-     */
-    private String verificationCode;
-
-    /**
-     * 唯一标识
-     */
-    private String uuid = "";
-
-    /**
-     * 登陆方式 0.验证码 1.账号密码
-     */
-    @NotNull(message = "登陆方式不能为空!")
-    private Integer loginType;
+//    private String clientId;
+//
+//    /**
+//     * 验证码
+//     */
+//    private String verificationCode;
+//
+//    /**
+//     * 唯一标识
+//     */
+//    private String uuid = "";
+//
+//    /**
+//     * 登陆方式 0.验证码 1.账号密码
+//     */
+//    @NotNull(message = "登陆方式不能为空!")
+//    private Integer loginType;
 
 }
