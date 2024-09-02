@@ -4,11 +4,12 @@ FROM openjdk:17-jdk-alpine
 # 设置工作目录
 WORKDIR /app
 
+RUN ./gradlew bootJar &&  cp build/libs/authorization-server-0.0.1-SNAPSHOT.jar  ~/prod/
 # 将编译好的 JAR 文件复制到容器中
-COPY build/libs/authorization-service.jar .
+#COPY build/libs/authorization-server-0.0.1-SNAPSHOT.jar .
 
 # 暴露应用程序的端口
-EXPOSE 8080
+EXPOSE 8882
 
 # 定义默认的启动命令
-CMD ["java", "-jar", "user-service.jar"]
+CMD ["java", "-jar", "authorization-server-0.0.1-SNAPSHOT.jar"]

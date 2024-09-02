@@ -1,0 +1,14 @@
+version: '3.9'  # 指定 Compose 文件的版本
+
+services: # 定义服务部分
+  app: # 定义 app 服务
+    build: # 指定 Dockerfile 路径（当前目录）
+      context: .
+      dockerfile: Dockerfile
+    volumes: # 挂载本地代码到容器中
+       - ~/prod/:/app
+#      - /app/node_modules
+    ports: # 映射端口
+      - "8882:8882"
+#    environment: # 可以在环境中设置变量
+#      - NODE_ENV=development
