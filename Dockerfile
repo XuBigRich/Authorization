@@ -4,7 +4,6 @@ FROM openjdk:17-jdk-alpine
 # 设置工作目录
 WORKDIR /app
 
-RUN ./gradlew bootJar &&  cp build/libs/authorization-server-0.0.1-SNAPSHOT.jar  ~/prod/
 # 将编译好的 JAR 文件复制到容器中
 #COPY build/libs/authorization-server-0.0.1-SNAPSHOT.jar .
 
