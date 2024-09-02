@@ -6,7 +6,7 @@ services: # 定义服务部分
       context: .
       dockerfile: Dockerfile
     volumes: # 挂载本地代码到容器中
-       - ~/prod/:/app
+       - /Users/xuhongzhi/studen/authorization-server/build/libs/:/app
 #      - /app/node_modules
     ports: # 映射端口
       - "8882:8882"

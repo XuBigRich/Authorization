@@ -1,0 +1,88 @@
+server:
+  port: 8882
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #    url: jdbc:mysql://127.0.0.1:3306/micro-server?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    url: jdbc:mysql://127.0.0.1:3306/user?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    username: root
+    password: rr998xhz1997
+  application:
+    name: authorization
+mybatis-plus:
+  # 搜索指定包别名
+  typeAliasesPackage: cn.piao888.user
+  # 配置mapper的扫描,我到所有的mapper.xml映射文件
+  mapper-locations: classpath:mapper/*Mapper.xml
+  #加载全局的配置文件
+#  config-location: classpath:mapper/mybatis-config.xml
+dubbo:
+  application:
+    id: dubbo-authorization-service
+    name: dubbo-authorization-service
+    qosEnable: false
+    metadata-type: remote
+  protocol:
+    id: dubbo
+    name: dubbo
+    port: 20888
+  registry:
+    id: dubbo-authorization-service-registry
+    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
+    address: nacos://127.0.0.1:8848
+  config-center:
+    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
+    address: nacos://127.0.0.1:8848
+  metadata-report:
+    #    address: nacos://127.0.0.1:8848?namespace=7b6ccc3a-704d-47c8-bb0f-2edfa03524db
+    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
+    address: nacos://127.0.0.1:8848
+
+seata:
+  enabled: true
+  application-id: ${spring.application.name}
+  tx-service-group: user-service-seata-service-group # 事务群组（可以每个应用独立取名，也可以使用相同的名字）
+  #  service:
+  #    vgroup-mapping:
+  #      storage-service-seata-service-group: default
+  #      规范的通过 Nacos获取seata-server服务信息
+  registry:
+    type: nacos
+    nacos:
+      server-addr: localhost:8848
+      group: SEATA_GROUP
+      application: seata-server
+      #      namespace: 7b6ccc3a-704d-47c8-bb0f-2edfa03524db
+      cluster: default
+  config:
+    type: nacos
+    nacos:
+      namespace: d6d8f8e5-f986-4856-a2e8-004e60cd373e
+      server-addr: localhost:8848
+      dataId: seataServer.properties
+      group: SEATA_GROUP
+  enable-auto-data-source-proxy: true
+  data-source-proxy-mode: AT
+# token配置
+token:
+  # 令牌自定义标识
+  header: Authorization
+  # 令牌密钥
+  secret: wQipts1UyA6vekEJLChj3wqY+GCvPSwmRhoNdHs6y8FoncEZWwQ2cGdmIjRuOPMjhFibESo4UvdJ0C2msbhBcQ==
+  # 令牌有效期（默认30分钟）
+  expireTime: 30
+management:
+  endpoints:
+    web:
+      exposure:
+        # 打开所有的监控点
+        include: "*"
+logging:
+  level:
+    org:
+      springframework:
+        DEBUG
