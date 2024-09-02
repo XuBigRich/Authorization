@@ -4,7 +4,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: host.docker.internal:8848
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     #    url: jdbc:mysql://host.docker.internal:3306/micro-server?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
@@ -53,7 +53,7 @@ seata:
   registry:
     type: nacos
     nacos:
-      server-addr: localhost:8848
+      server-addr: host.docker.internal:8848
       group: SEATA_GROUP
       application: seata-server
       #      namespace: 7b6ccc3a-704d-47c8-bb0f-2edfa03524db
@@ -62,7 +62,7 @@ seata:
     type: nacos
     nacos:
       namespace: d6d8f8e5-f986-4856-a2e8-004e60cd373e
-      server-addr: localhost:8848
+      server-addr: host.docker.internal:8848
       dataId: seataServer.properties
       group: SEATA_GROUP
   enable-auto-data-source-proxy: true
