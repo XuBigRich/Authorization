@@ -120,7 +120,7 @@ public class AuthorizationConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
                         .requestMatchers("/assets/**", "/webjars/**").permitAll()
-                        .requestMatchers("/login").permitAll() // 允许所有用户访问 /login 端点
+                        .requestMatchers("/login","/authorize1").permitAll() // 允许所有用户访问 /login 端点
                         .anyRequest().authenticated()
                 );
 
@@ -170,17 +170,18 @@ public class AuthorizationConfig {
     }
 
 //    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowCredentials(true);
-//        configuration.addAllowedOriginPattern("*");
-//        configuration.addAllowedHeader("*");
-//        configuration.addAllowedMethod("*");
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//
-//        return source;
-//    }
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedOrigin("http://localhost:9998");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(

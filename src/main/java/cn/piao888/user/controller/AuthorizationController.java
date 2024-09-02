@@ -26,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -49,7 +50,7 @@ public class AuthorizationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public void  login(@RequestBody LoginBody loginRequest, HttpServletResponse response) {
+    public String login(@RequestBody LoginBody loginRequest, HttpServletResponse response) throws IOException {
         Authentication authenticationRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUsername(), loginRequest.getPassword());
         Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
@@ -57,23 +58,19 @@ public class AuthorizationController {
         // 生成token
         // 设置令牌过期时间，例如设置为一小时
         final String token = tokenService.createToken(loginUser);
-
-        // 创建 Cookie 并设置属性
-        Cookie authCookie = new Cookie("Authentication", token);
-        authCookie.setHttpOnly(true);
-        authCookie.setMaxAge(60 * 60); // 设置Cookie过期时间为1小时
-        authCookie.setPath("/"); // 设置Cookie的路径
-
-        // 将 Cookie 添加到响应中
-        response.addCookie(authCookie);
-
         // 重定向到指定的URL
-        response.setStatus(HttpServletResponse.SC_FOUND);
-        response.setHeader("Location", "http://gonkamasn.com/");
+        return "https://api.gonkamasn.com/api-user/login/authorize?redirect_uri=http://gonkamasn.com&token=" + token;
     }
 
     @GetMapping("/authorize1")
-    public void authorize(HttpServletResponse response, @RequestParam("redirect_uri") String returnUrl) throws IOException {
+    public void authorize(HttpServletResponse response, @RequestParam("redirect_uri") String returnUrl, @RequestParam("token") String token) throws IOException {
+        // 创建 Cookie 并设置属性
+        Cookie authCookie = new Cookie("token", token);
+        authCookie.setHttpOnly(true);
+        authCookie.setMaxAge(60 * 60); // 设置Cookie过期时间为1小时
+        authCookie.setPath("/"); // 设置Cookie的路径
+        // 将 Cookie 添加到响应中
+        response.addCookie(authCookie);
         response.sendRedirect(returnUrl);
     }
 
