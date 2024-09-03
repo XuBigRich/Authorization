@@ -2,7 +2,6 @@ package cn.piao888.user.vo.req;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * 用户登录对象

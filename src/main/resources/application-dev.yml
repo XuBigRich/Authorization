@@ -34,13 +34,13 @@ dubbo:
     id: dubbo-authorization-service-registry
     #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
     address: nacos://127.0.0.1:8848
-  config-center:
-    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
-    address: nacos://127.0.0.1:8848
-  metadata-report:
-    #    address: nacos://127.0.0.1:8848?namespace=7b6ccc3a-704d-47c8-bb0f-2edfa03524db
-    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
-    address: nacos://127.0.0.1:8848
+#  config-center:
+#    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
+#    address: nacos://127.0.0.1:8848
+#  metadata-report:
+#    #    address: nacos://127.0.0.1:8848?namespace=7b6ccc3a-704d-47c8-bb0f-2edfa03524db
+#    #    address: nacos://127.0.0.1:8848?namespace=d6d8f8e5-f986-4856-a2e8-004e60cd373e
+#    address: nacos://127.0.0.1:8848
 
 seata:
   enabled: true
@@ -85,4 +85,4 @@ logging:
   level:
     org:
       springframework:
-        DEBUG
+        INFO

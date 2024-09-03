@@ -89,9 +89,11 @@ public class AuthorizationConfig {
 //        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http
                 // 其他配置...
-                .apply(new OAuth2AuthorizationServerConfigurer())
+                .with(new OAuth2AuthorizationServerConfigurer(),e->{
+                       e.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
+                });
                 // 然后可以链式调用自定义配置
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
+
 
         // 添加JWT filter
         http
