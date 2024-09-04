@@ -1,7 +1,7 @@
 package cn.piao888.user.security.config.security;
 
 import cn.piao888.user.utils.ServletUtils;
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +34,6 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
 //            // 删除用户缓存记录
 //            tokenService.delLoginUser(loginUser.getToken());
 //        }
-        ServletUtils.renderString(response, JSON.toJSONString("退出成功"));
+        ServletUtils.renderString(response,  new ObjectMapper().writeValueAsString("退出成功"));
     }
 }

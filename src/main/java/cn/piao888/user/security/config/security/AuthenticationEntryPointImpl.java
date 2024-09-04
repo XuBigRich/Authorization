@@ -2,7 +2,7 @@ package cn.piao888.user.security.config.security;
 
 import cn.piao888.user.utils.ServletUtils;
 import cn.piao888.user.vo.response.ObjectResponse;
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +29,6 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint, S
         Integer code = HttpStatus.UNAUTHORIZED.value();
         log.info("认证失败了！");
         String msg = String.format("请求访问：{}，认证失败，无法访问系统资源", request.getRequestURI());
-        ServletUtils.renderString(response, JSON.toJSONString(ObjectResponse.failed(code, msg)));
+        ServletUtils.renderString(response,  new ObjectMapper().writeValueAsString((ObjectResponse.failed(code, msg))));
     }
 }

@@ -40,8 +40,6 @@ ext {
     logbackVersion = '1.1.10'
 }
 dependencies {
-//    implementation 'cn.piao888:common:0.0.1-SNAPSHOT'
-//    implementation project(":common")
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.7'
@@ -50,15 +48,12 @@ dependencies {
 //    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
-    implementation "io.seata:seata-spring-boot-starter:${seataVersion}"
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
-    implementation("org.apache.dubbo:dubbo:${dubboVersion}")
-    implementation "org.apache.dubbo:dubbo-spring-boot-starter:${dubboVersion}"
-    implementation "org.apache.dubbo:dubbo-config-spring:${dubboVersion}"
-    implementation "org.apache.dubbo:dubbo-registry-nacos:${dubboVersion}"
+    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
     implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
     implementation "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }

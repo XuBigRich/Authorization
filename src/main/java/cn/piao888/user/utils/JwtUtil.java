@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import javax.json.Json;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,0 +1,30 @@
+# Spring
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      discovery:
+        # 服务注册地址
+        server-addr: 127.0.0.1:8848
+        group: DEFAULT_GROUP
+        namespace: public
+        register-enabled: true
+        username: nacos
+        password: nacos
+      config:
+        # 配置中心地址
+        server-addr: 127.0.0.1:8848
+        # 配置文件格式
+        file-extension: yml
+        username: nacos
+        password: nacos
+        group: ${spring.cloud.nacos.discovery.group}
+        namespace: ${spring.cloud.nacos.discovery.namespace}
+        shared-configs[0]:
+          data-id: authorization.yml # 配置文件名-Data Id
+          group: ${spring.cloud.nacos.discovery.group}   # 默认为DEFAULT_GROUP
+          refresh: false
+logging:
+  level:
+    com.alibaba.nacos.client: info
