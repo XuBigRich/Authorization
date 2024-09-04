@@ -20,6 +20,8 @@ management:
       exposure:
         # 打开所有的监控点
         include: "*"
+piao888:
+  redirctURL: http://127.0.0.1:6688/api-user/login/authorize?redirect_uri=http://127.0.0.1:8080&token=
 logging:
   level:
     org:

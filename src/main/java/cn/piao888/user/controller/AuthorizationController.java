@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
@@ -48,6 +49,8 @@ public class AuthorizationController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private TokenService tokenService;
+    @Value("${piao888.redirctURL}")
+    private String redirctURL;
 
     @PostMapping("/login")
     public String login(@RequestBody LoginBody loginRequest, HttpServletResponse response) throws IOException {
@@ -59,8 +62,7 @@ public class AuthorizationController {
         // 设置令牌过期时间，例如设置为一小时
         final String token = tokenService.createToken(loginUser);
         // 重定向到指定的URL
-        return "https://api.gonkamasn.com/api-user/login/authorize?redirect_uri=http://gonkamasn.com&token=" + token;
-//        return "http://127.0.0.1:6688/api-user/login/authorize?redirect_uri=http://127.0.0.1:8080&token=" + token;
+        return redirctURL + token;
     }
 
     @GetMapping("/authorize1")
