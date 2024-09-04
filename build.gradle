@@ -64,6 +64,7 @@ task report {
         }
     }
 }
+report.dependsOn(bootJar)
 test {
     useJUnitPlatform()
 }
