@@ -59,14 +59,14 @@ public class AuthorizationController {
         // 设置令牌过期时间，例如设置为一小时
         final String token = tokenService.createToken(loginUser);
         // 重定向到指定的URL
-//        return "https://api.gonkamasn.com/api-user/login/authorize?redirect_uri=http://gonkamasn.com&token=" + token;
-        return "http://127.0.0.1:6688/api-user/login/authorize?redirect_uri=http://127.0.0.1:8080&token=" + token;
+        return "https://api.gonkamasn.com/api-user/login/authorize?redirect_uri=http://gonkamasn.com&token=" + token;
+//        return "http://127.0.0.1:6688/api-user/login/authorize?redirect_uri=http://127.0.0.1:8080&token=" + token;
     }
 
     @GetMapping("/authorize1")
     public void authorize(HttpServletResponse response, @RequestParam("redirect_uri") String returnUrl, @RequestParam("token") String token) throws IOException {
         // 创建 Cookie 并设置属性
-        Cookie authCookie = new Cookie("token", token);
+        Cookie authCookie = new Cookie("PIAO-888-TOKEN", token);
         authCookie.setHttpOnly(true);
         authCookie.setMaxAge(60 * 60); // 设置Cookie过期时间为1小时
         authCookie.setPath("/"); // 设置Cookie的路径
